@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>CRUD con Node.js + SQLite</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
@@ -12,16 +12,38 @@
     button { margin-right: 5px; padding: 5px 10px; }
     form { margin-top: 20px; }
     input { margin: 5px; padding: 8px; }
+
+    /* Popup modal */
+    #popup {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #28a745;
+      color: white;
+      padding: 15px 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+      z-index: 1000;
+      font-weight: bold;
+      font-family: Arial, sans-serif;
+    }
+    #popup.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
   </style>
 </head>
 <body>
   <h1>Gestión de Usuarios</h1>
 
   <form id="userForm">
-    <input type="hidden" id="userId">
-    <input type="text" id="name" placeholder="Nombre" required>
-    <input type="email" id="email" placeholder="Email" required>
-    <input type="number" id="age" placeholder="Edad" required>
+    <input type="hidden" id="userId" />
+    <input type="text" id="name" placeholder="Nombre" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="number" id="age" placeholder="Edad" required />
     <button type="submit">Guardar</button>
   </form>
 
@@ -33,6 +55,8 @@
     </thead>
     <tbody id="userTable"></tbody>
   </table>
+
+  <div id="popup"></div>
 
   <script>
     const API_URL = '/users';
@@ -76,12 +100,23 @@
 
       document.getElementById('userForm').reset();
       fetchUsers();
+      showPopup('Usuario guardado correctamente');
+    }
+
+    function showPopup(message) {
+      const popup = document.getElementById('popup');
+      popup.textContent = message;
+      popup.classList.add('show');
+      setTimeout(() => {
+        popup.classList.remove('show');
+      }, 3000);
     }
 
     async function deleteUser(id) {
       if (confirm('¿Seguro que quieres eliminar este usuario?')) {
         await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
         fetchUsers();
+        showPopup('Usuario eliminado');
       }
     }
 
