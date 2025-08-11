@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>CRUD con Node.js + SQLite</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    h1 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #f4f4f4; }
+    button { margin-right: 5px; padding: 5px 10px; }
+    form { margin-top: 20px; }
+    input { margin: 5px; padding: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Gestión de Usuarios</h1>
+
+  <form id="userForm">
+    <input type="hidden" id="userId">
+    <input type="text" id="name" placeholder="Nombre" required>
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="number" id="age" placeholder="Edad" required>
+    <button type="submit">Guardar</button>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th><th>Nombre</th><th>Email</th><th>Edad</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="userTable"></tbody>
+  </table>
+
+  <script>
+    const API_URL = '/users';
+
+    async function fetchUsers() {
+      const res = await fetch(API_URL);
+      const users = await res.json();
+      const table = document.getElementById('userTable');
+      table.innerHTML = '';
+      users.forEach(user => {
+        table.innerHTML += `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>${user.age}</td>
+            <td>
+              <button onclick="editUser(${user.id}, '${user.name}', '${user.email}', ${user.age})">Editar</button>
+              <button onclick="deleteUser(${user.id})">Eliminar</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function addUser(e) {
+      e.preventDefault();
+      const id = document.getElementById('userId').value;
+      const name = document.getElementById('name').value;
+      const email = document.getElementById('email').value;
+      const age = document.getElementById('age').value;
+
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `${API_URL}/${id}` : API_URL;
+
+      await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, age })
+      });
+
+      document.getElementById('userForm').reset();
+      fetchUsers();
+    }
+
+    async function deleteUser(id) {
+      if (confirm('¿Seguro que quieres eliminar este usuario?')) {
+        await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+        fetchUsers();
+      }
+    }
+
+    function editUser(id, name, email, age) {
+      document.getElementById('userId').value = id;
+      document.getElementById('name').value = name;
+      document.getElementById('email').value = email;
+      document.getElementById('age').value = age;
+    }
+
+    document.getElementById('userForm').addEventListener('submit', addUser);
+
+    fetchUsers();
+  </script>
+</body>
+</html>
